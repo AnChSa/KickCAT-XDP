@@ -1,3 +1,4 @@
+# AnChSa, 2026-11-05: native MSVC/Windows XDP integration.
 set(_KICKCAT_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE INTERNAL "")
 
 # GNUInstallDirs must stay outside the gate: the INSTALL_INTERFACE genex in
@@ -35,6 +36,22 @@ function(kickcat_install_package os_libraries)
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
   )
 
+  install(FILES ${PROJECT_SOURCE_DIR}/LICENSE
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/KickCAT)
+  if (ENABLE_WINDOWS_XDP)
+    install(FILES ${PROJECT_SOURCE_DIR}/docs/WINDOWS_XDP.md
+      DESTINATION ${CMAKE_INSTALL_DATADIR}/KickCAT/docs)
+    install(FILES ${PROJECT_SOURCE_DIR}/FORK.md ${PROJECT_SOURCE_DIR}/CONTRIBUTING.md
+      DESTINATION ${CMAKE_INSTALL_DATADIR}/KickCAT)
+    set(KICKCAT_XDP_SYSTEM_LIBS "")
+    if (NOT BUILD_SHARED_LIBS)
+      set(KICKCAT_XDP_SYSTEM_LIBS "iphlpapi.lib;ws2_32.lib;ole32.lib;ntdll.lib;")
+    endif()
+    configure_file(${_KICKCAT_CMAKE_DIR}/KickCAT-XDP.props.in
+      ${CMAKE_CURRENT_BINARY_DIR}/KickCAT-XDP.props @ONLY)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/KickCAT-XDP.props DESTINATION .)
+  endif()
+
   set(cmake_config_dir ${CMAKE_INSTALL_LIBDIR}/cmake/KickCAT)
 
   install(EXPORT KickCATTargets
@@ -62,6 +79,11 @@ function(kickcat_install_package os_libraries)
   )
 
   # Relocatable .pc via ${pcfiledir} so DESTDIR-staged installs resolve paths.
+  # Native MSVC consumers use the CMake package or Visual Studio property sheets.
+  # A GNU-style .pc would misrepresent DLL import libraries and multi-config names.
+  if (KICKCAT_MSVC_MINIMAL)
+    return()
+  endif()
   if(IS_ABSOLUTE "${CMAKE_INSTALL_LIBDIR}")
     set(PC_PREFIX "${CMAKE_INSTALL_PREFIX}")
     set(PC_LIBDIR "${CMAKE_INSTALL_LIBDIR}")
@@ -83,6 +105,7 @@ function(kickcat_install_package os_libraries)
   set(pc_requires_private "")
   set(pc_libs_private "")
   set(pc_cflags_extra "")
+
 
   set(pc_skip_libs "")
   if(ENABLE_AF_XDP AND LINUX)

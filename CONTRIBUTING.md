@@ -1,19 +1,41 @@
-# How to contribute
+<!-- AnChSa, 2026-11-05: contribution guidance for the Windows XDP fork. -->
+# Contributing
 
-I'm really glad you're reading this, because we need volunteer to help this project to became better and better.
+This repository is AnChSa's Windows XDP fork of
+[leducp/KickCAT](https://github.com/leducp/KickCAT). Pull requests are disabled
+for this fork. Please support the original project whenever a change benefits
+KickCAT generally.
 
-## Submitting changes
+## Support upstream KickCAT
 
-Please send a GitHub Pull Request with  a clear list of what you've done and why.
+General EtherCAT fixes, portable improvements, documentation and tests should be
+discussed or contributed to [upstream KickCAT](https://github.com/leducp/KickCAT).
+Follow the upstream project's
+[contribution guidelines](https://github.com/leducp/KickCAT/blob/master/CONTRIBUTING.md)
+when opening an issue or pull request there. Choose the upstream base branch and
+keep a proposed change focused on the problem it solves.
 
-Always write a clear log message for your commits. One-line messages are fine for small changes, but bigger changes should look like this:
+Describe the behavior before and after the change, its motivation and the tests
+performed. Keep commit messages clear and preserve or improve test coverage.
+Supporting upstream helps fixes remain available to all KickCAT users and keeps
+the changes carried by this fork small.
 
-$ git commit -m "A brief summary of the commit
+## Windows XDP-specific changes
 
-> A paragraph describing what changed and its impact."
+For behavior specific to this fork's native MSVC/XDP backend, discuss it with
+AnChSa. The fork's scope and qualification limits are documented in
+[FORK.md](FORK.md); the build instructions are in
+[docs/WINDOWS_XDP.md](docs/WINDOWS_XDP.md).
 
-Take care to not deteriorate code coverage!
+When describing a problem, include the commit, compiler/toolset, build options,
+XDP SDK/runtime versions and the relevant error or trace. Distinguish failures
+reproduced by the hardware-free checks from observations on real hardware.
+Report actual hardware, adapter and driver details when they affect the result.
 
-## Testing new hardware
+Keep transport and portability code independent of application configuration,
+sensor interpretation and image buffers. Use the existing KickCAT style and
+`uncrustify.cfg`. Run the native core/socket checks for port changes; hardware
+tests and packet traces provide additional evidence when available.
 
-We try to have the most compliant EtherCAT master stack as possible, but we only have access to a few EtherCAT slaves to test it throughfully. Hardware world is always full of  edge cases and reporting us which board doesn't work with the KickCAT debug trace plus a network trace is really helpful to investigate what we are doing wrong or what needs to be improved.
+The standalone native checks do not replace the upstream GoogleTest suite or
+hardware interoperability testing. Passing them is not a real-time guarantee.

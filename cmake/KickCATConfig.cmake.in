@@ -1,9 +1,12 @@
+# AnChSa, 2026-11-05: native MSVC/Windows XDP integration.
 @PACKAGE_INIT@
 
 include(CMakeFindDependencyMacro)
 
 set(KICKCAT_ENABLE_ESI_PARSER @ENABLE_ESI_PARSER@)
 set(KICKCAT_ENABLE_AF_XDP      @ENABLE_AF_XDP@)
+set(KICKCAT_ENABLE_WINDOWS_XDP @ENABLE_WINDOWS_XDP@)
+set(KICKCAT_MSVC_MINIMAL       @KICKCAT_MSVC_MINIMAL@)
 
 if(KICKCAT_ENABLE_ESI_PARSER)
     find_dependency(tinyxml2 CONFIG)
@@ -15,7 +18,7 @@ if(KICKCAT_ENABLE_AF_XDP AND LINUX)
     pkg_check_modules(LIBBPF REQUIRED libbpf)
 endif()
 
-if(WIN32)
+if(WIN32 AND NOT KICKCAT_MSVC_MINIMAL)
     find_dependency(npcap CONFIG)
 endif()
 

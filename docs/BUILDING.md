@@ -1,3 +1,4 @@
+<!-- AnChSa, 2026-11-05: native MSVC/Windows XDP fork changes. -->
 # Building KickCAT
 
 KickCAT uses Conan (for dependencies) and CMake, wrapped by the scripts in
@@ -126,6 +127,10 @@ make -j
 ```
 
 ## Windows
+
+For the optional native MSVC x64 master with the Windows XDP backend, including
+DLL/static builds and a relocatable install package, see [WINDOWS_XDP.md](WINDOWS_XDP.md).
+The GCC/Npcap configuration below is the original Windows build path.
 
 Windows is **not** suitable for real-time use, but it is useful for tools and
 testing.

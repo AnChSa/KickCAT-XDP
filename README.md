@@ -12,6 +12,17 @@
 
 ---
 
+## Windows XDP fork
+
+This is [AnChSa's Windows XDP fork](https://github.com/AnChSa/KickCAT-XDP)
+of [KickCAT](https://github.com/leducp/KickCAT). It adds an optional native
+MSVC x64 master build with a Windows XDP socket backend and installable DLL/static
+library packages for use by separate Windows applications.
+
+See [fork scope, changes and tests](FORK.md) for what this build actually uses,
+and [native Windows XDP build instructions](docs/WINDOWS_XDP.md) to build it.
+The upstream project overview and feature descriptions follow below.
+
 ## Overview
 
 KickCAT is a thin EtherCAT stack designed to be embedded in larger software with
@@ -156,9 +167,10 @@ Reference boards: NXP Freedom K64F (LAN9252), Arduino Due with EasyCAT shield
 
 ## Contributing
 
-Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for code-style
-and PR conventions, and [docs/BUILDING.md](docs/BUILDING.md) for the development
-build (unit tests and coverage).
+Please support [upstream KickCAT](https://github.com/leducp/KickCAT) with general
+improvements. Pull requests are disabled for this Windows XDP fork. See
+[CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidance and
+[docs/BUILDING.md](docs/BUILDING.md) for the development build (unit tests and coverage).
 
 KickCAT follows [Semantic Versioning](https://semver.org/). The release workflow
 is documented in [release/RELEASE_PROCEDURE.md](release/RELEASE_PROCEDURE.md).
@@ -168,6 +180,9 @@ is documented in [release/RELEASE_PROCEDURE.md](release/RELEASE_PROCEDURE.md).
 [CeCILL-C](LICENSE)
 
 ## Support
+
+The following support and release links refer to upstream KickCAT. Qualification
+of this fork's Windows XDP backend is described in [FORK.md](FORK.md).
 
 - Issues: [GitHub Issues](https://github.com/leducp/KickCAT/issues)
 - Discussions: [GitHub Discussions](https://github.com/leducp/KickCAT/discussions)

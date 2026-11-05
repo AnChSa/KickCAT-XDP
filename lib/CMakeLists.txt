@@ -72,6 +72,15 @@ elseif (UNIX)
     ${CMAKE_CURRENT_SOURCE_DIR}/src/OS/Unix/Filesystem.cc
   )
   set(OS_LIBRARIES pthread rt)
+elseif (WIN32 AND KICKCAT_MSVC_MINIMAL)
+  # AnChSa, 2026-10-30: native core, transport supplied by caller.
+  set(OS_LIB_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/OS/Windows/MsvcTime.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/OS/Windows/Timer.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/OS/Windows/Filesystem.cc
+  )
+  set(OS_LIBRARIES )
+  list(REMOVE_ITEM KICKCAT_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/TapSocket.cc)
 elseif (WIN32)
   set(OS_LIB_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/OS/Windows/Socket.cc
@@ -147,8 +156,35 @@ if (ENABLE_AF_XDP AND LINUX)
 endif()
 
 add_library(kickcat ${KICKCAT_SOURCES} ${OS_LIB_SOURCES})
+add_library(KickCAT::kickcat ALIAS kickcat)
+target_compile_features(kickcat PUBLIC cxx_std_17)
+if (MSVC AND KICKCAT_MSVC_MINIMAL)
+  # Keep the existing C++ API; no compiler-specific annotations in core headers.
+  set_target_properties(kickcat PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
+
+if (ENABLE_WINDOWS_XDP)
+  set(XDP_INCLUDE_DIR "" CACHE PATH "XDP for Windows 1.3.0 SDK build/native/include directory")
+  if (NOT EXISTS "${XDP_INCLUDE_DIR}/xdpapi.h" OR NOT EXISTS "${XDP_INCLUDE_DIR}/afxdp_helper.h")
+    message(FATAL_ERROR "Set XDP_INCLUDE_DIR to the XDP for Windows 1.3.0 SDK include directory")
+  endif()
+  target_sources(kickcat PRIVATE
+    src/OS/Windows/Xdp/Socket.cc
+    src/OS/Windows/Xdp/Transport.cc
+  )
+  target_include_directories(kickcat PRIVATE "${XDP_INCLUDE_DIR}")
+  target_compile_definitions(kickcat PRIVATE XDP_API_VERSION=3 _WIN32_WINNT=0x0A00)
+  target_compile_definitions(kickcat PUBLIC KICKCAT_WINDOWS_XDP_ENABLED)
+  list(APPEND OS_LIBRARIES iphlpapi ws2_32 ole32 ntdll)
+  set_target_properties(kickcat PROPERTIES OUTPUT_NAME "KickCAT-XDP" DEBUG_POSTFIX "d")
+endif()
 kickcat_publish_includes(kickcat ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_definitions(kickcat PUBLIC ${OS_COMPILE_DEFS})
+if(KICKCAT_MSVC_MINIMAL)
+  # UCRT's legacy DOMAIN macro collides with the public CoE::ObjectCode::DOMAIN.
+  # Keep the public enum unchanged and use standard CRT names in this build.
+  target_compile_definitions(kickcat PUBLIC _CRT_DECLARE_NONSTDC_NAMES=0)
+endif()
 
 if (ENABLE_AF_XDP AND LINUX)
   target_sources(kickcat PRIVATE ${BPF_HDR})
@@ -169,7 +205,14 @@ if (NOT KICKOS)
   # needs the slave path only.
   add_subdirectory(master)
 endif()
-add_subdirectory(slave)
+if(KICKCAT_MSVC_MINIMAL)
+  # Mailbox.cc contains shared master/slave code and needs AbstractESC's real
+  # helpers. Include those helpers, not hardware/slave state-machine backends.
+  target_sources(kickcat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/slave/src/AbstractESC.cc)
+  kickcat_publish_includes(kickcat ${CMAKE_CURRENT_SOURCE_DIR}/slave/include)
+else()
+  add_subdirectory(slave)
+endif()
 
 # Host-only simulation support; needs the ESI parser + JSON. Built with the
 # simulator (the tests link it too, gated on this target existing).

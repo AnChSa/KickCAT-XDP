@@ -1,17 +1,22 @@
 #ifndef KICKCAT_FOE_PROTOCOL_H
 #define KICKCAT_FOE_PROTOCOL_H
 
+// AnChSa, 2026-10-30: portable wire-structure packing.
+#include "kickcat/Compiler.h"
+
 #include "kickcat/protocol.h"
 
 namespace kickcat::FoE
 {
+    KICKCAT_PACKED_BEGIN
     struct Header   // ETG1000.6 chapter 5.8
     {
         uint8_t  opcode;
         uint8_t  reserved;
         uint32_t value;     // READ, WRITE: password (0: unused). DATA, ACK: packet number (ACK 0: write accepted).
                             // ERROR: error code. BUSY: done (low 16 bits) and entire (high 16 bits).
-    } __attribute__((__packed__));
+    } KICKCAT_PACKED;
+    KICKCAT_PACKED_END
 
     // A mailbox of N bytes carries N - OVERHEAD bytes of file
     constexpr uint16_t OVERHEAD = sizeof(mailbox::Header) + sizeof(Header);

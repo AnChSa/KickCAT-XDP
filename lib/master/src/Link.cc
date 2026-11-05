@@ -241,8 +241,9 @@ namespace kickcat
         };
 
         int32_t error_count = 0;
-        error_count += write_read(socket_nominal_, socket_redundancy_, PRIMARY_IF_MAC);
-        error_count += write_read(socket_redundancy_, socket_nominal_, SECONDARY_IF_MAC);
+        // AnChSa, 2026-10-30: honor the constructor's configured MACs.
+        error_count += write_read(socket_nominal_, socket_redundancy_, src_nominal_);
+        error_count += write_read(socket_redundancy_, socket_nominal_, src_redundancy_);
 
         if (error_count > 1)
         {
@@ -289,8 +290,8 @@ namespace kickcat
         int32_t const datagrams = frame_nominal_.datagramCounter();
         int32_t to_Write = frame_nominal_.finalize();
 
-        bool is_frame_sent_nominal = write(socket_nominal_, frame_nominal_, PRIMARY_IF_MAC, to_Write);
-        bool is_frame_sent_redundancy = write(socket_redundancy_, frame_nominal_, SECONDARY_IF_MAC, to_Write);
+        bool is_frame_sent_nominal = write(socket_nominal_, frame_nominal_, src_nominal_, to_Write);
+        bool is_frame_sent_redundancy = write(socket_redundancy_, frame_nominal_, src_redundancy_, to_Write);
 
         frame_nominal_.clear();
         frame_redundancy_.clear();
